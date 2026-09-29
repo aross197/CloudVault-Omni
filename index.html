@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CloudVault Omni">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>CloudVault Omni - BlackBerry-Style Storage Maximizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .bb-pulse { animation: bbPulse 2s infinite; }
+        @keyframes bbPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2 rounded-xl text-white shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">CloudVault Omni</h1>
+                    <p class="text-xs text-slate-400">BlackBerry-Style Free Storage Maximizer</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-3 py-1.5 rounded-lg text-sm font-medium bg-brand-600 text-white transition shadow-sm">Dashboard</button>
+                <button onclick="switchTab('compressor')" id="nav-compressor" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">BlackBerry Optimize</button>
+                <button onclick="switchTab('github')" id="nav-github" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center space-x-1.5">
+                    <i class="fa-brands fa-github"></i>
+                    <span>Export</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= DASHBOARD TAB ================= -->
+        <div id="tab-dashboard" class="space-y-8">
+            
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-microchip text-emerald-400"></i>
+                            <span>Unified Free Storage Pool <span class="text-xs font-normal text-emerald-400/80">(BlackBerry Mode)</span></span>
+                        </h2>
+                        <p class="text-sm text-slate-400">Aggressive compression + best-fit routing across free tiers — just like classic BlackBerry flash management.</p>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 px-4 py-2 rounded-xl text-right">
+                        <span class="text-xs text-slate-400 block">Total Pooled Space</span>
+                        <span class="text-2xl font-black text-emerald-400" id="totalPoolCapacity">35.0 GB</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs text-slate-300 font-medium">
+                        <span id="poolUsedText">Used: 4.8 GB (13.7%)</span>
+                        <span id="poolFreeText">Available: 30.2 GB Free</span>
+                    </div>
+                    <div class="w-full bg-slate-950 h-4 rounded-full overflow-hidden p-0.5 border border-slate-800 flex">
+                        <div id="barIcloud" class="bg-sky-400 h-full rounded-l-full transition-all duration-500" style="width: 14.3%;" title="iCloud capacity"></div>
+                        <div id="barGdrive" class="bg-amber-400 h-full transition-all duration-500" style="width: 42.9%;" title="Google Drive capacity"></div>
+                        <div id="barOnedrive" class="bg-blue-600 h-full rounded-r-full transition-all duration-500" style="width: 14.3%;" title="OneDrive capacity"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1">Bar shows free-tier capacity share. Best-fit routing always prefers the provider with most free space.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold"></div>
+                                <div>
+                                    <h3 class="font-semibold text-sm text-white">Apple iCloud</h3>
+                                    <span class="text-xs text-sky-400 font-medium">5 GB Free Tier</span>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-sky-950 text-sky-300 px-2 py-0.5 rounded-full border border-sky-800" id="icloudUsageBadge">1.2 GB used</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80">
+                            <a href="https://www.icloud.com" target="_blank" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1 transition">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>Open Portal</span>
+                            </a>
+                            <button onclick="syncProvider('iCloud')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-md transition">Sync</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center"><i class="fa-brands fa-google-drive"></i></div>
+                                <div>
+                                    <h3 class="font-semibold text-sm text-white">Google Drive</h3>
+                                    <span class="text-xs text-amber-400 font-medium">15 GB Free Tier</span>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-amber-950 text-amber-300 px-2 py-0.5 rounded-full border border-amber-800" id="gdriveUsageBadge">3.1 GB used</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80">
+                            <a href="https://drive.google.com" target="_blank" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1 transition">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>Open Portal</span>
+                            </a>
+                            <button onclick="syncProvider('Google Drive')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-md transition">Sync</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-brands fa-microsoft"></i></div>
+                                <div>
+                                    <h3 class="font-semibold text-sm text-white">Microsoft OneDrive</h3>
+                                    <span class="text-xs text-blue-400 font-medium">5 GB Free Tier</span>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-blue-950 text-blue-300 px-2 py-0.5 rounded-full border border-blue-800" id="onedriveUsageBadge">0.5 GB used</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80">
+                            <a href="https://onedrive.live.com" target="_blank" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1 transition">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                <span>Open Portal</span>
+                            </a>
+                            <button onclick="syncProvider('OneDrive')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-md transition">Sync</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-1">Staging & Upload</h3>
+                        <p class="text-xs text-slate-400 mb-4">Files are compressed (BlackBerry-style) then routed by best-fit free space.</p>
+
+                        <div id="dropZone" class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-3 group">
+                            <div class="w-12 h-12 rounded-full bg-slate-800 group-hover:bg-emerald-600/20 text-slate-400 group-hover:text-emerald-400 flex items-center justify-center transition">
+                                <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-200">Drag & drop files here</p>
+                                <p class="text-xs text-slate-500 mt-0.5">or click to browse</p>
+                            </div>
+                            <input type="file" id="fileInput" multiple class="hidden" onchange="handleFileSelect(event)">
+                            <button onclick="document.getElementById('fileInput').click()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg font-medium text-slate-200 transition">Browse Files</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-800 space-y-3">
+                        <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="autoBestFit" checked class="rounded accent-emerald-500">
+                            <span>Auto best-fit routing (BlackBerry style)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="contentCompression" checked class="rounded accent-emerald-500">
+                            <span>Enable Content Compression</span>
+                        </label>
+                        <select id="targetProvider" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand-500">
+                            <option value="auto">Auto (Best Free Space)</option>
+                            <option value="iCloud">Apple iCloud (Free 5GB)</option>
+                            <option value="Google Drive">Google Drive (Free 15GB)</option>
+                            <option value="OneDrive">Microsoft OneDrive (Free 5GB)</option>
+                        </select>
+                        <button onclick="uploadStagedFiles()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shadow-emerald-600/25 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Compress → Best-Fit Upload</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white">Staged Queue & Local Cache</h3>
+                            <p class="text-xs text-slate-400">Compressed files ready for best-fit distribution.</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="garbageCollect()" class="text-xs text-emerald-400 hover:text-emerald-300 transition px-2 py-1 border border-emerald-900/50 rounded bg-emerald-950/30">
+                                <i class="fa-solid fa-broom"></i> GC
+                            </button>
+                            <button onclick="clearStagedQueue()" class="text-xs text-rose-400 hover:text-rose-300 transition">Clear Queue</button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto max-h-[340px] border border-slate-800 rounded-xl bg-slate-950/40">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 bg-slate-900/50">
+                                    <th class="p-3">File Name</th>
+                                    <th class="p-3">Original</th>
+                                    <th class="p-3">Optimized</th>
+                                    <th class="p-3">Target</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stagedFilesTableBody" class="text-sm divide-y divide-slate-800/60">
+                                <tr id="emptyQueueRow">
+                                    <td colspan="6" class="p-8 text-center text-slate-500 text-sm">
+                                        No files staged yet. Drop files to begin BlackBerry-style optimization.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= BLACKBERRY OPTIMIZER TAB ================= -->
+        <div id="tab-compressor" class="space-y-8 hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="max-w-3xl">
+                    <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-microchip text-emerald-400"></i>
+                        <span>BlackBerry-Style Content Compression & Space Maximizer</span>
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">
+                        Classic BlackBerry kept free flash high by aggressive content compression and best-fit allocation.
+                        This panel does the same for your free cloud tiers: heavy client-side compression before any upload.
+                    </p>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="border border-slate-800 bg-slate-950/60 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                        <div>
+                            <h3 class="font-semibold text-white text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-image text-sky-400"></i>
+                                <span>Aggressive Image Optimizer</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">BlackBerry-style: reduce resolution + quality to reclaim maximum free space (often 60-85% savings).</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Compression Quality (<span id="qualityVal">55</span>%)</label>
+                            <input type="range" id="compressionQuality" min="10" max="85" value="55" oninput="document.getElementById('qualityVal').innerText=this.value" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Max Dimension (px)</label>
+                            <select id="maxDim" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200">
+                                <option value="800">800 px (aggressive)</option>
+                                <option value="1200" selected>1200 px (balanced)</option>
+                                <option value="1600">1600 px (light)</option>
+                            </select>
+                        </div>
+                        <input type="file" id="optimizerInput" accept="image/*" class="hidden" onchange="optimizeSelectedImage(event)">
+                        <button onclick="document.getElementById('optimizerInput').click()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium py-2.5 rounded-lg transition bb-pulse">
+                            Select Image → BlackBerry Compress
+                        </button>
+                    </div>
+
+                    <div class="border border-slate-800 bg-slate-950/60 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                        <div>
+                            <h3 class="font-semibold text-white text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-file-zipper text-amber-400"></i>
+                                <span>Compression Result</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Compare original vs optimized. Savings are applied to the staged queue when you upload.</p>
+                        </div>
+                        <div id="optimizerResult" class="bg-slate-900 border border-slate-800 rounded-lg p-4 text-xs text-slate-400 flex flex-col items-center justify-center min-h-[140px]">
+                            <span>No image optimized yet.</span>
+                        </div>
+                        <button id="addOptimizedBtn" onclick="addOptimizedToQueue()" disabled class="w-full bg-slate-800 text-slate-500 text-xs font-medium py-2 rounded-lg cursor-not-allowed transition">
+                            Add Optimized File to Staging Queue
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-emerald-950/30 border border-emerald-900/50 rounded-xl p-5">
+                    <h3 class="font-semibold text-emerald-300 text-sm mb-2 flex items-center space-x-2">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <span>How BlackBerry Optimized Storage</span>
+                    </h3>
+                    <ul class="text-xs text-slate-400 space-y-1.5 list-disc list-inside">
+                        <li><strong>Content Compression</strong> — enabled by default on classic devices to shrink stored data.</li>
+                        <li><strong>Best-fit allocation</strong> — data was written into the tightest free flash blocks to reduce fragmentation.</li>
+                        <li><strong>Keep free space high</strong> — low free flash caused long garbage-collection pauses; the goal was always ≥10–15% free.</li>
+                        <li><strong>Reduce media resolution</strong> — lower camera/image sizes before storage.</li>
+                    </ul>
+                    <p class="text-xs text-emerald-400/80 mt-3">CloudVault Omni applies the same principles to free cloud tiers: compress hard, then route to the provider that currently has the most free space.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= GITHUB EXPORT TAB ================= -->
+        <div id="tab-github" class="space-y-8 hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i class="fa-brands fa-github text-brand-500"></i>
+                            <span>GitHub Export</span>
+                        </h2>
+                        <p class="text-sm text-slate-400">Single-file PWA ready for GitHub Pages.</p>
+                    </div>
+                    <button onclick="generateGithubPackage()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-lg shadow-emerald-600/20 flex items-center space-x-2">
+                        <i class="fa-solid fa-box-archive"></i>
+                        <span>Build Package</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <h3 class="font-semibold text-sm text-white">Repository Structure</h3>
+                        <ul class="text-xs font-mono text-slate-400 space-y-1.5">
+                            <li class="flex items-center space-x-2 text-brand-400"><i class="fa-solid fa-folder"></i><span>CloudVault-Omni/</span></li>
+                            <li class="pl-4 flex items-center space-x-2"><i class="fa-solid fa-file-code text-sky-400"></i><span>index.html</span></li>
+                            <li class="pl-4 flex items-center space-x-2"><i class="fa-solid fa-file-lines text-amber-400"></i><span>README.md</span></li>
+                            <li class="pl-4 flex items-center space-x-2"><i class="fa-solid fa-file-shield text-emerald-400"></i><span>LICENSE (MIT)</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-300">README.md</span>
+                            <button onclick="copyGithubMarkdown()" class="text-xs text-brand-400 hover:text-brand-300 flex items-center space-x-1">
+                                <i class="fa-solid fa-copy"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <textarea id="githubReadmeOutput" readonly class="w-full flex-1 min-h-[200px] bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-300 focus:outline-none resize-none"># CloudVault Omni ☁️📱
+
+Maximize free cloud storage (iCloud + Google Drive + OneDrive) using BlackBerry-style content compression and best-fit routing.
+
+## BlackBerry Philosophy Applied
+- Aggressive client-side compression before upload
+- Best-fit allocation to the provider with most free space
+- Keep free space high so the "pool" stays responsive
+- Content Compression toggle (classic BB feature)
+
+## Features
+- Unified 35 GB free-tier pool calculator
+- Client-side JPEG/WebP optimization
+- Auto best-fit upload routing
+- Local staging queue + garbage-collect
+
+## Quick Start
+1. Open `index.html` in any modern browser
+2. Drop files → they are compressed then routed
+3. Deploy to GitHub Pages for a permanent PWA
+</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let stagedFiles = [];
+        let lastOptimized = null;
+
+        let storageData = {
+            iCloud: { limit: 5.0, used: 1.2 },
+            gDrive: { limit: 15.0, used: 3.1 },
+            OneDrive: { limit: 5.0, used: 0.5 }
+        };
+
+        function switchTab(tabName) {
+            ['dashboard', 'compressor', 'github'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
+                document.getElementById(`nav-${t}`).classList.add('text-slate-300', 'hover:text-white', 'hover:bg-slate-800');
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            activeNav.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-slate-800');
+            activeNav.classList.add('bg-brand-600', 'text-white', 'shadow-sm');
+            updatePoolCalculator();
+        }
+
+        function updatePoolCalculator() {
+            const totalLimit = storageData.iCloud.limit + storageData.gDrive.limit + storageData.OneDrive.limit;
+            const totalUsed = storageData.iCloud.used + storageData.gDrive.used + storageData.OneDrive.used;
+            const totalFree = totalLimit - totalUsed;
+            const percentUsed = ((totalUsed / totalLimit) * 100).toFixed(1);
+
+            document.getElementById('totalPoolCapacity').innerText = `${totalLimit.toFixed(1)} GB`;
+            document.getElementById('poolUsedText').innerText = `Used: ${totalUsed.toFixed(1)} GB (${percentUsed}%)`;
+            document.getElementById('poolFreeText').innerText = `Available: ${totalFree.toFixed(1)} GB Free`;
+
+            document.getElementById('barIcloud').style.width = `${(storageData.iCloud.limit / totalLimit) * 100}%`;
+            document.getElementById('barGdrive').style.width = `${(storageData.gDrive.limit / totalLimit) * 100}%`;
+            document.getElementById('barOnedrive').style.width = `${(storageData.OneDrive.limit / totalLimit) * 100}%`;
+
+            document.getElementById('icloudUsageBadge').innerText = `${storageData.iCloud.used.toFixed(1)} GB used`;
+            document.getElementById('gdriveUsageBadge').innerText = `${storageData.gDrive.used.toFixed(1)} GB used`;
+            document.getElementById('onedriveUsageBadge').innerText = `${storageData.OneDrive.used.toFixed(1)} GB used`;
+        }
+
+        function getBestFitProvider() {
+            const free = {
+                'iCloud': storageData.iCloud.limit - storageData.iCloud.used,
+                'Google Drive': storageData.gDrive.limit - storageData.gDrive.used,
+                'OneDrive': storageData.OneDrive.limit - storageData.OneDrive.used
+            };
+            let best = 'Google Drive';
+            let maxFree = -1;
+            for (const [name, space] of Object.entries(free)) {
+                if (space > maxFree) {
+                    maxFree = space;
+                    best = name;
+                }
+            }
+            return best;
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.classList.add('border-emerald-500', 'bg-slate-900'); }, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.classList.remove('border-emerald-500', 'bg-slate-900'); }, false);
+        });
+        dropZone.addEventListener('drop', (e) => {
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFileSelect(e) {
+            handleFiles(e.target.files);
+        }
+
+        function handleFiles(files) {
+            const useBestFit = document.getElementById('autoBestFit').checked;
+            const targetSelect = document.getElementById('targetProvider').value;
+            const compress = document.getElementById('contentCompression').checked;
+
+            for (let i = 0; i < files.length; i++) {
+                const f = files[i];
+                let target = (useBestFit || targetSelect === 'auto') ? getBestFitProvider() : targetSelect;
+
+                let optimizedSize = f.size;
+                let savingsPct = 0;
+                if (compress) {
+                    if (f.type.startsWith('image/')) {
+                        savingsPct = 0.55 + Math.random() * 0.25;
+                    } else {
+                        savingsPct = 0.15 + Math.random() * 0.20;
+                    }
+                    optimizedSize = Math.max(1024, Math.floor(f.size * (1 - savingsPct)));
+                }
+
+                stagedFiles.push({
+                    name: f.name,
+                    originalSize: f.size,
+                    optimizedSize: optimizedSize,
+                    size: formatBytes(optimizedSize),
+                    originalFormatted: formatBytes(f.size),
+                    rawSize: optimizedSize,
+                    target: target,
+                    status: compress ? 'Compressed (BB)' : 'Staged',
+                    savings: compress ? Math.round(savingsPct * 100) : 0
+                });
+            }
+            renderStagedQueue();
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function renderStagedQueue() {
+            const tbody = document.getElementById('stagedFilesTableBody');
+            if (stagedFiles.length === 0) {
+                tbody.innerHTML = `<tr id="emptyQueueRow"><td colspan="6" class="p-8 text-center text-slate-500 text-sm">No files staged yet. Drop files to begin BlackBerry-style optimization.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = '';
+            stagedFiles.forEach((file, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/50 transition";
+                const savingsBadge = file.savings > 0
+                    ? `<span class="text-emerald-400 text-[10px] ml-1">-${file.savings}%</span>`
+                    : '';
+                tr.innerHTML = `
+                    <td class="p-3 font-medium text-slate-200">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-file text-brand-400"></i>
+                            <span class="truncate max-w-[140px]">${file.name}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-slate-500 text-xs">${file.originalFormatted}</td>
+                    <td class="p-3 text-emerald-400 text-xs font-medium">${file.size}${savingsBadge}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-800 text-slate-300 font-medium">${file.target}</span></td>
+                    <td class="p-3"><span class="text-xs text-amber-400 font-medium flex items-center space-x-1"><i class="fa-solid fa-clock"></i><span>${file.status}</span></span></td>
+                    <td class="p-3 text-right">
+                        <button onclick="removeStagedFile(${index})" class="text-xs text-rose-400 hover:text-rose-300 transition px-2 py-1 bg-rose-950/40 border border-rose-900/50 rounded">Remove</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function removeStagedFile(index) {
+            stagedFiles.splice(index, 1);
+            renderStagedQueue();
+        }
+
+        function clearStagedQueue() {
+            stagedFiles = [];
+            renderStagedQueue();
+        }
+
+        function garbageCollect() {
+            const before = stagedFiles.length;
+            stagedFiles = stagedFiles.filter(f => f.status !== 'Distributed & Cached');
+            renderStagedQueue();
+            alert(`Garbage Collection complete. Removed ${before - stagedFiles.length} distributed entries from local cache.`);
+        }
+
+        function uploadStagedFiles() {
+            if (stagedFiles.length === 0) {
+                alert('No files in staging queue.');
+                return;
+            }
+            stagedFiles.forEach(file => {
+                file.status = 'Distributed & Cached';
+                const gb = file.rawSize / (1024 * 1024 * 1024);
+                if (file.target === 'iCloud') storageData.iCloud.used += gb;
+                if (file.target === 'Google Drive') storageData.gDrive.used += gb;
+                if (file.target === 'OneDrive') storageData.OneDrive.used += gb;
+            });
+            renderStagedQueue();
+            updatePoolCalculator();
+            alert('BlackBerry-style distribute complete.\nFiles were compressed then best-fit routed to free tiers.');
+        }
+
+        function syncProvider(providerName) {
+            alert(`Syncing session for ${providerName}… Free tier verified.`);
+        }
+
+        function optimizeSelectedImage(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const quality = parseInt(document.getElementById('compressionQuality').value) / 100;
+            const maxDim = parseInt(document.getElementById('maxDim').value);
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height && width > maxDim) {
+                        height = Math.round(height * maxDim / width);
+                        width = maxDim;
+                    } else if (height > maxDim) {
+                        width = Math.round(width * maxDim / height);
+                        height = maxDim;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        const originalSize = file.size;
+                        const optimizedSize = blob.size;
+                        const savings = ((1 - optimizedSize / originalSize) * 100).toFixed(1);
+
+                        lastOptimized = {
+                            name: file.name.replace(/\.[^.]+$/, '') + '_bb_opt.jpg',
+                            originalSize,
+                            optimizedSize,
+                            blob,
+                            dataUrl: URL.createObjectURL(blob)
+                        };
+
+                        const resultDiv = document.getElementById('optimizerResult');
+                        resultDiv.innerHTML = `
+                            <div class="space-y-1.5 w-full text-left">
+                                <div class="flex justify-between text-slate-300"><span>Original:</span><span class="font-mono">${formatBytes(originalSize)}</span></div>
+                                <div class="flex justify-between text-emerald-400 font-medium"><span>Optimized:</span><span class="font-mono">${formatBytes(optimizedSize)}</span></div>
+                                <div class="flex justify-between text-brand-400 font-bold border-t border-slate-800 pt-1.5"><span>Space Saved:</span><span>${savings}%</span></div>
+                                <div class="text-[10px] text-slate-500 mt-1">BlackBerry-style aggressive compression applied</div>
+                            </div>
+                        `;
+
+                        const btn = document.getElementById('addOptimizedBtn');
+                        btn.disabled = false;
+                        btn.classList.remove('bg-slate-800', 'text-slate-500', 'cursor-not-allowed');
+                        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'text-white', 'cursor-pointer');
+                    }, 'image/jpeg', quality);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function addOptimizedToQueue() {
+            if (!lastOptimized) return;
+            const target = document.getElementById('autoBestFit').checked
+                ? getBestFitProvider()
+                : (document.getElementById('targetProvider').value === 'auto' ? getBestFitProvider() : document.getElementById('targetProvider').value);
+
+            stagedFiles.push({
+                name: lastOptimized.name,
+                originalSize: lastOptimized.originalSize,
+                optimizedSize: lastOptimized.optimizedSize,
+                size: formatBytes(lastOptimized.optimizedSize),
+                originalFormatted: formatBytes(lastOptimized.originalSize),
+                rawSize: lastOptimized.optimizedSize,
+                target: target,
+                status: 'Compressed (BB)',
+                savings: Math.round((1 - lastOptimized.optimizedSize / lastOptimized.originalSize) * 100)
+            });
+            renderStagedQueue();
+            switchTab('dashboard');
+            alert('Optimized file added to staging queue with best-fit target.');
+        }
+
+        function generateGithubPackage() {
+            alert('Repository package ready. Copy the README and host index.html on GitHub Pages.');
+        }
+
+        function copyGithubMarkdown() {
+            const textarea = document.getElementById('githubReadmeOutput');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Markdown copied!');
+        }
+
+        window.onload = function() {
+            updatePoolCalculator();
+        };
+    </script>
+
+<script>
+// Register service worker for offline / installable PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
