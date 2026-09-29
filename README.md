@@ -2,46 +2,55 @@
 
 **BlackBerry-style multi-cloud free storage maximizer**
 
-Maximize your free cloud storage across **Apple iCloud (5 GB)**, **Google Drive (15 GB)**, and **Microsoft OneDrive (5 GB)** — total **35 GB free pool** — using classic BlackBerry techniques:
+Maximize free cloud storage across **Apple iCloud (5 GB)** + **Google Drive (15 GB)** + **Microsoft OneDrive (5 GB)** = **35 GB free pool** using classic BlackBerry techniques:
 
-- **Content Compression** (aggressive client-side image & file reduction)
-- **Best-fit routing** (always send files to the provider with the most free space)
-- **Keep free space high** (local garbage-collect + live pool calculator)
+- Aggressive **Content Compression** before upload
+- **Best-fit routing** (files go to the provider with the most free space)
+- Keep free space high (local GC + live pool calculator)
 
-## Live Demo / Install on Phone (Free)
+## Make it work + Install on your phone (free)
 
-1. Visit the GitHub Pages site (enable it below if not already live):  
-   **https://aross197.github.io/CloudVault-Omni/**
-2. On **iPhone (Safari)**: Share → Add to Home Screen  
-3. On **Android (Chrome)**: Menu → Install app / Add to Home screen  
+### 1. Enable GitHub Pages (one-time, 30 seconds)
 
-It works as a free Progressive Web App (PWA) — no App Store, no payment.
+1. Open this repo: https://github.com/aross197/CloudVault-Omni
+2. Click **Settings** → **Pages** (left sidebar)
+3. Under **Build and deployment** → **Source**, choose **GitHub Actions**
+4. Save / wait a few seconds
+
+The workflow will automatically deploy the site.
+
+### 2. Open the live site
+
+After the first deploy finishes (usually 1–2 minutes):
+
+**https://aross197.github.io/CloudVault-Omni/**
+
+### 3. Add to your phone home screen (free PWA)
+
+- **iPhone (Safari)**  
+  Open the link above → Share button → **Add to Home Screen**
+
+- **Android (Chrome)**  
+  Open the link → Menu (⋮) → **Install app** or **Add to Home screen**
+
+No App Store / Play Store needed. Completely free.
 
 ## Features
 
 - Unified free-tier storage pool calculator
 - Drag-and-drop staging with automatic BlackBerry-style compression
-- Manual aggressive image optimizer (quality + max dimension controls)
+- Manual aggressive image optimizer (quality + max dimension)
 - Best-fit automatic routing across providers
-- Local cache + garbage collection
-- Fully client-side (no backend required)
+- Local cache + garbage collection button
+- Fully client-side (works offline for the UI)
 
-## Quick Start (Local)
+## Local use
+
+Just open `index.html` in any modern browser, or run:
 
 ```bash
-# Just open the file
-open index.html
-# or serve it
 npx serve .
 ```
-
-## Enable GitHub Pages (so you can install on your phone)
-
-1. Go to the repo → **Settings** → **Pages**
-2. Under "Source" choose **Deploy from a branch**
-3. Branch: `main` / folder: `/ (root)`
-4. Save. After ~1 minute the site will be live at:  
-   https://aross197.github.io/CloudVault-Omni/
 
 ## License
 
